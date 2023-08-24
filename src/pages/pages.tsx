@@ -30,8 +30,6 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
 		docs = e.toString()
 	}
 
-	const currentUserJson = currentUser ? currentUser.toJSON() : null
-
 	return {
 		props: {
 			docs,
