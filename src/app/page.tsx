@@ -6,8 +6,6 @@ import { getAuthenticatedAppForUser } from '@/lib/firebase-ssr'
 export const revalidate = 0
 
 export default async function Home() {
-	const session = cookies().get('__session')?.value || ''
-
 	const { app, currentUser } = await getAuthenticatedAppForUser()
 
 	if (!currentUser || !app) return <>Could not find __session cookie</>
@@ -28,6 +26,8 @@ export default async function Home() {
 	} catch (e: any) {
 		docs = e.toString()
 	}
+
+	const session = cookies().get('__session')?.value || ''
 
 	return (
 		<main className="h-screen container m-auto flex gap-8 flex-col">
