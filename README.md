@@ -16,4 +16,4 @@ npm install
 firebase emulators:start
 ```
 
-4. Open [http://localhost:5000](http://localhost:5000) to test the app
+5. Open [http://localhost:5000](http://localhost:5000) to test the app
