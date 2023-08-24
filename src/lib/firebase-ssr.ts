@@ -11,7 +11,6 @@ import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app'
 import { User, getAuth, signInWithCustomToken } from 'firebase/auth'
 
 import { LRUCache } from 'lru-cache'
-import { cookies } from 'next/headers'
 
 const ADMIN_APP_NAME = 'firebase-frameworks'
 const adminApp =
@@ -43,7 +42,16 @@ export async function getAuthenticatedAppForUser(
 ): Promise<{ app: FirebaseApp | null; currentUser: User | null }> {
 	const noSessionReturn = { app: null, currentUser: null }
 
-	if (!session) session = cookies().get('__session')?.value || ''
+	if (!session) {
+		try {
+			// dynamically import to prevent import errors in pages router
+			const cookies = await import('next/headers').then((headers) => headers.cookies)
+
+			session = cookies().get('__session')?.value || ''
+		} catch (e: any) {
+			return noSessionReturn
+		}
+	}
 
 	if (!session) return noSessionReturn
 

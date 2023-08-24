@@ -10,8 +10,14 @@ export function useUser() {
 
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-			setUser(authUser)
-			router.refresh()
+			setUser((prevUser) => {
+				// refresh when user changed to ease testing
+				if (prevUser !== undefined && prevUser?.email !== authUser?.email) {
+					router.refresh()
+				}
+
+				return authUser
+			})
 		})
 
 		return () => unsubscribe()
