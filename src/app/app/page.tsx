@@ -28,7 +28,7 @@ export default async function Home() {
 	const session = cookies().get('__session')?.value || ''
 
 	return (
-		<main className="h-screen container m-auto flex gap-8 flex-col">
+		<>
 			<h1>In app router, from server:</h1>
 
 			<p>
@@ -49,6 +49,6 @@ export default async function Home() {
 			</p>
 
 			<EnvVariablesComponent />
-		</main>
+		</>
 	)
 }

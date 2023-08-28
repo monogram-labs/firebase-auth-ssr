@@ -25,3 +25,7 @@ body {
 button {
 	@apply border px-1 rounded-sm;
 }
+
+main {
+	@apply h-screen container m-auto flex gap-8 flex-col;
+}

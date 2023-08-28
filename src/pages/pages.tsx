@@ -51,7 +51,7 @@ export default function PagesTest({ session, app, currentUser, docs }: any) {
 	}
 
 	return (
-		<main className="h-screen container m-auto flex gap-8 flex-col">
+		<>
 			<h1>In pages router, from server:</h1>
 
 			<p>
@@ -74,6 +74,6 @@ export default function PagesTest({ session, app, currentUser, docs }: any) {
 			</p>
 
 			<EnvVariablesComponent />
-		</main>
+		</>
 	)
 }
