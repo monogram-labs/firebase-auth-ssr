@@ -3,9 +3,10 @@ import { collection, getDocs, getFirestore } from 'firebase/firestore'
 import { GetServerSidePropsContext } from 'next'
 
 export async function getServerSideProps({ req }: GetServerSidePropsContext) {
+	// passing the cookie from the request is required in the pages router
 	const { app, currentUser } = await getAuthenticatedAppForUser(req.cookies.__session)
 
-	if (!app) {
+	if (!app || !currentUser) {
 		return {
 			props: {
 				session: null
@@ -19,13 +20,8 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
 		const db = getFirestore(app)
 		const querySnapshot = await getDocs(collection(db, 'test-collection'))
 
-		querySnapshot.forEach((doc) => {
-			docs = doc.data()
-		})
-
-		if (!docs) {
-			docs = 'Request authorized, no existing docs'
-		}
+		if (querySnapshot.empty) docs = 'Request authorized, no existing docs'
+		else docs = querySnapshot.docs.map((doc) => doc.data())
 	} catch (e: any) {
 		docs = e.toString()
 	}
@@ -48,7 +44,7 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
 
 export default function PagesTest({ session, app, currentUser, docs }: any) {
 	if (!session) {
-		return <>Could not find __session cookie</>
+		return <>Could not find __session cookie or session is revoked</>
 	}
 
 	return (
@@ -59,6 +55,7 @@ export default function PagesTest({ session, app, currentUser, docs }: any) {
 				<b>session:</b> <br />
 				{session}
 			</p>
+
 			<p>
 				<b>app.name:</b> <br />
 				{app._name}
@@ -67,6 +64,7 @@ export default function PagesTest({ session, app, currentUser, docs }: any) {
 				<b>current user:</b> <br />
 				{currentUser?.email}
 			</p>
+
 			<p>
 				<b>docs:</b> <br />
 				{JSON.stringify(docs)}

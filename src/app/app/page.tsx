@@ -8,7 +8,7 @@ export const revalidate = 0
 export default async function Home() {
 	const { app, currentUser } = await getAuthenticatedAppForUser()
 
-	if (!currentUser || !app) return <>Could not find __session cookie</>
+	if (!currentUser || !app) return <>Could not find __session cookie or session is revoked</>
 
 	let docs: any
 
@@ -16,13 +16,8 @@ export default async function Home() {
 		const db = getFirestore(app)
 		const querySnapshot = await getDocs(collection(db, 'test-collection'))
 
-		querySnapshot.forEach((doc) => {
-			docs = doc.data()
-		})
-
-		if (!docs) {
-			docs = 'Request authorized, no existing docs'
-		}
+		if (querySnapshot.empty) docs = 'Request authorized, no existing docs'
+		else docs = querySnapshot.docs.map((doc) => doc.data())
 	} catch (e: any) {
 		docs = e.toString()
 	}
