@@ -2,7 +2,7 @@
 
 import { useReducer } from 'react'
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: JSX.Element }) {
 	const [count, increment] = useReducer((count) => count + 1, 0)
 
 	return (

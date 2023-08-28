@@ -2,7 +2,7 @@
 
 import { useReducer } from 'react'
 
-export function ClientComponent({ children }: { children: React.ReactNode }) {
+export function ClientComponent({ children }: { children: JSX.Element }) {
 	const [count, increment] = useReducer((count) => count + 1, 0)
 
 	return (
