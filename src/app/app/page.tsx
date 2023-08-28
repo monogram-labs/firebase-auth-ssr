@@ -2,8 +2,11 @@ import { cookies } from 'next/headers'
 import { getFirestore, collection, getDocs } from 'firebase/firestore'
 
 import { getAuthenticatedAppForUser } from '@/lib/firebase-ssr'
+import dynamic from 'next/dynamic'
 
 export const revalidate = 0
+
+const EnvVariablesComponent = dynamic(() => import('../../components/EnvVariables'), { ssr: false })
 
 export default async function Home() {
 	const { app, currentUser } = await getAuthenticatedAppForUser()
@@ -44,6 +47,8 @@ export default async function Home() {
 				<b>docs:</b> <br />
 				{JSON.stringify(docs)}
 			</p>
+
+			<EnvVariablesComponent />
 		</main>
 	)
 }

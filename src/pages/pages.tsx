@@ -1,6 +1,9 @@
 import { getAuthenticatedAppForUser } from '@/lib/firebase-ssr'
 import { collection, getDocs, getFirestore } from 'firebase/firestore'
 import { GetServerSidePropsContext } from 'next'
+import dynamic from 'next/dynamic'
+
+const EnvVariablesComponent = dynamic(() => import('../components/EnvVariables'), { ssr: false })
 
 export async function getServerSideProps({ req }: GetServerSidePropsContext) {
 	// passing the cookie from the request is required in the pages router
@@ -69,6 +72,8 @@ export default function PagesTest({ session, app, currentUser, docs }: any) {
 				<b>docs:</b> <br />
 				{JSON.stringify(docs)}
 			</p>
+
+			<EnvVariablesComponent />
 		</main>
 	)
 }
