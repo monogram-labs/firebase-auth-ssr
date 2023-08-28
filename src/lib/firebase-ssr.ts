@@ -6,7 +6,7 @@
 
 import { credential } from 'firebase-admin'
 import { initializeApp as initializeAdminApp, getApps } from 'firebase-admin/app'
-import { getAuth as getFirebaseAdminAuth } from 'firebase-admin/auth'
+import { getAuth as getAdminAuth } from 'firebase-admin/auth'
 import { initializeApp, FirebaseApp } from 'firebase/app'
 import { User, getAuth, signInWithCustomToken } from 'firebase/auth'
 
@@ -27,7 +27,7 @@ const adminApp =
 		ADMIN_APP_NAME
 	)
 
-const adminAuth = getFirebaseAdminAuth(adminApp)
+const adminAuth = getAdminAuth(adminApp)
 
 export async function getAuthenticatedAppForUser(
 	session?: string
