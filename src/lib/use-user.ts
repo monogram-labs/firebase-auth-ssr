@@ -10,19 +10,24 @@ export function useUser() {
 
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-			setUser((prevUser) => {
-				// refresh when user changed to ease testing
-				if (prevUser !== undefined && prevUser?.email !== authUser?.email) {
-					router.refresh()
-				}
-
-				return authUser
-			})
+			setUser(authUser)
 		})
 
 		return () => unsubscribe()
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
+
+	useEffect(() => {
+		onAuthStateChanged(auth, (authUser) => {
+			if (user === undefined) return
+
+			// refresh when user changed to ease testing
+			if (user?.email !== authUser?.email) {
+				router.refresh()
+			}
+		})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [user])
 
 	return user
 }
