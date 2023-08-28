@@ -3,11 +3,14 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore'
 
 import { getAuthenticatedAppForUser } from '@/lib/firebase-ssr'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
+import { ClientComponent } from '@/components/ClientComponent'
+import { ServerComponent } from '@/components/ServerComponent'
 
 export const revalidate = 0
 
-const EnvVariablesComponent = dynamic(() => import('../../components/EnvVariables'), { ssr: false })
+const EnvVariablesComponent = dynamic(() => import('../../../components/EnvVariables'), {
+	ssr: false
+})
 
 export default async function Home() {
 	const { app, currentUser } = await getAuthenticatedAppForUser()
@@ -30,11 +33,9 @@ export default async function Home() {
 
 	return (
 		<>
-			<h1>In app router, from server:</h1>
-
-			<Link href="/app/server-in-client" className="underline">
-				server components in client components demo
-			</Link>
+			<ClientComponent>
+				<ServerComponent />
+			</ClientComponent>
 
 			<p>
 				<b>session:</b> <br />
