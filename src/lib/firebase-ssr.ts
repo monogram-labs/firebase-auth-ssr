@@ -6,13 +6,14 @@
 
 import { credential } from 'firebase-admin'
 import { initializeApp as initializeAdminApp, getApps } from 'firebase-admin/app'
-import { getAuth as getAdminAuth } from 'firebase-admin/auth'
-import { initializeApp, deleteApp, FirebaseApp } from 'firebase/app'
+import { getAuth as getFirebaseAdminAuth } from 'firebase-admin/auth'
+import { initializeApp, FirebaseApp } from 'firebase/app'
 import { User, getAuth, signInWithCustomToken } from 'firebase/auth'
 
-import { LRUCache } from 'lru-cache'
+import { firebaseConfig } from './firebase'
 
 const ADMIN_APP_NAME = 'firebase-frameworks'
+
 const adminApp =
 	getApps().find((it) => it.name === ADMIN_APP_NAME) ||
 	initializeAdminApp(
@@ -25,17 +26,8 @@ const adminApp =
 		},
 		ADMIN_APP_NAME
 	)
-const adminAuth = getAdminAuth(adminApp)
 
-const firebaseAppsLRU = new LRUCache<string, FirebaseApp>({
-	max: 100,
-	ttl: 1000 * 60 * 5,
-	allowStale: true,
-	updateAgeOnGet: true,
-	dispose: (value) => {
-		deleteApp(value)
-	}
-})
+const adminAuth = getFirebaseAdminAuth(adminApp)
 
 export async function getAuthenticatedAppForUser(
 	session?: string
@@ -43,45 +35,59 @@ export async function getAuthenticatedAppForUser(
 	const noSessionReturn = { app: null, currentUser: null }
 
 	if (!session) {
-		try {
-			// dynamically import to prevent import errors in pages router
-			const cookies = await import('next/headers').then((headers) => headers.cookies)
+		// if no session cookie was passed, try to get from next/headers for app router
+		session = await getAppRouterSession().catch((e: any) => {
+			// not in app router, can't get session cookie
+			return undefined
+		})
 
-			session = cookies().get('__session')?.value || ''
-		} catch (e: any) {
-			return noSessionReturn
-		}
+		if (!session) return noSessionReturn
 	}
 
-	if (!session) return noSessionReturn
+	const decodedIdToken = await adminAuth.verifySessionCookie(session)
 
-	const decodedIdToken = await adminAuth
-		.verifySessionCookie(session)
-		.catch((e: any) => console.error(e.message))
-	if (!decodedIdToken) return noSessionReturn
-	const { uid } = decodedIdToken
-	let app = firebaseAppsLRU.get(uid)
-	if (!app) {
-		const isRevoked = !(await adminAuth
-			.verifySessionCookie(session, true)
-			.catch((e: any) => console.error(e.message)))
-		if (isRevoked) return noSessionReturn
-		const random = Math.random().toString(36).split('.')[1]
-		const appName = `authenticated-context:${uid}:${random}`
-		// Force JS SDK autoinit with the undefined
-		app = initializeApp(undefined as any, appName)
-		firebaseAppsLRU.set(uid, app)
-	}
+	// handle revoked tokens
+	const isRevoked = !(await adminAuth
+		.verifySessionCookie(session, true)
+		.catch((e: any) => console.error(e.message)))
+	if (isRevoked) return noSessionReturn
+
+	const app = initializeAuthenticatedApp(decodedIdToken.uid)
 	const auth = getAuth(app)
-	if (auth.currentUser?.uid !== uid) {
+
+	// authenticate with custom token
+	if (auth.currentUser?.uid !== decodedIdToken.uid) {
 		// TODO(jamesdaniels) get custom claims
 		const customToken = await adminAuth
-			.createCustomToken(uid)
+			.createCustomToken(decodedIdToken.uid)
 			.catch((e: any) => console.error(e.message))
 
 		if (!customToken) return noSessionReturn
+
 		await signInWithCustomToken(auth, customToken)
 	}
 
 	return { app, currentUser: auth.currentUser }
+}
+
+async function getAppRouterSession() {
+	// dynamically import to prevent import errors in pages router
+	const { cookies } = await import('next/headers')
+
+	const session = cookies().get('__session')?.value
+
+	if (!session) {
+		throw new Error('Could not find __session cookie')
+	}
+
+	return session
+}
+
+function initializeAuthenticatedApp(uid: string) {
+	const random = Math.random().toString(36).split('.')[1]
+	const appName = `authenticated-context:${uid}:${random}`
+
+	const app = initializeApp(firebaseConfig, appName)
+
+	return app
 }
