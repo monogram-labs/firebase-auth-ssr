@@ -1,6 +1,9 @@
+import { cookies } from 'next/headers'
+
 import { collection, getDocs, getFirestore } from 'firebase/firestore'
-import EnvVariables from './EnvVariables'
 import { getAuthenticatedAppForUser } from '@/lib/firebase-ssr'
+
+import EnvVariables from './EnvVariables'
 
 export async function ServerComponent() {
 	const { app, currentUser } = await getAuthenticatedAppForUser()
@@ -19,8 +22,17 @@ export async function ServerComponent() {
 		docs = e.toString()
 	}
 
+	const session = cookies().get('__session')?.value || ''
+
 	return (
 		<>
+			<h2>From server:</h2>
+
+			<p>
+				<b>session:</b> <br />
+				{session}
+			</p>
+
 			<p>
 				<b>app.name:</b> <br />
 				{app.name}
