@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 export default function EnvVariables() {
-	const [envVariables, setEnvVariables] = useState({})
+	const [envVariables, setEnvVariables] = useState<any>()
 
 	useEffect(() => {
 		setEnvVariables({
@@ -23,7 +23,7 @@ export default function EnvVariables() {
 		<div>
 			<b>.env variables:</b>
 
-			<pre>{JSON.stringify(envVariables, null, 2)}</pre>
+			{envVariables ? <pre>{JSON.stringify(envVariables, null, 2)}</pre> : <span> Loading...</span>}
 		</div>
 	)
 }
