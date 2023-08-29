@@ -33,7 +33,7 @@ export default async function Home() {
 			<h1>In app router, from server:</h1>
 
 			<Link href="/app/server-in-client" className="underline">
-				server components in client components demo
+				Go to server components in client components demo
 			</Link>
 
 			<p>
