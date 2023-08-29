@@ -1,15 +1,11 @@
 import { cookies } from 'next/headers'
-import { getFirestore, collection, getDocs } from 'firebase/firestore'
 
+import { collection, getDocs, getFirestore } from 'firebase/firestore'
 import { getAuthenticatedAppForUser } from '@/lib/firebase-ssr'
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
 
-export const revalidate = 0
+import EnvVariables from './EnvVariables'
 
-const EnvVariablesComponent = dynamic(() => import('../../components/EnvVariables'), { ssr: false })
-
-export default async function Home() {
+export async function ServerComponent() {
 	const { app, currentUser } = await getAuthenticatedAppForUser()
 
 	if (!currentUser || !app) return <>Could not find __session cookie or session is revoked</>
@@ -30,16 +26,13 @@ export default async function Home() {
 
 	return (
 		<>
-			<h1>In app router, from server:</h1>
-
-			<Link href="/app/server-in-client" className="underline">
-				Go to server components in client components demo
-			</Link>
+			<h2>From server:</h2>
 
 			<p>
 				<b>session:</b> <br />
 				{session}
 			</p>
+
 			<p>
 				<b>app.name:</b> <br />
 				{app.name}
@@ -53,7 +46,7 @@ export default async function Home() {
 				{JSON.stringify(docs)}
 			</p>
 
-			<EnvVariablesComponent />
+			<EnvVariables />
 		</>
 	)
 }
