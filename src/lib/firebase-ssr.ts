@@ -36,10 +36,7 @@ export async function getAuthenticatedAppForUser(
 
 	if (!session) {
 		// if no session cookie was passed, try to get from next/headers for app router
-		session = await getAppRouterSession().catch((e: any) => {
-			// not in app router, can't get session cookie
-			return undefined
-		})
+		session = await getAppRouterSession()
 
 		if (!session) return noSessionReturn
 	}
@@ -70,20 +67,19 @@ export async function getAuthenticatedAppForUser(
 	return { app, currentUser: auth.currentUser }
 }
 
-async function getAppRouterSession() {
+async function getAppRouterSession(): Promise<string | undefined> {
 	// dynamically import to prevent import errors in pages router
 	const { cookies } = await import('next/headers')
 
-	const session = cookies().get('__session')?.value
-
-	if (!session) {
-		throw new Error('Could not find __session cookie')
+	try {
+		return cookies().get('__session')?.value
+	} catch (error: any) {
+		// cookies() throws when called from pages router
+		return undefined
 	}
-
-	return session
 }
 
-function initializeAuthenticatedApp(uid: string) {
+function initializeAuthenticatedApp(uid: string): FirebaseApp {
 	const random = Math.random().toString(36).split('.')[1]
 	const appName = `authenticated-context:${uid}:${random}`
 
